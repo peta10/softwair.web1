@@ -1,0 +1,10 @@
+{
+  "name": "@app/ui",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "lucide-react": "^0.344.0",
+    "@splinetool/react-spline": "^2.2.6",
+    "@splinetool/runtime": "^1.9.79"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": ["src/main.tsx"],
+  "project": ["src/**/*.{ts,tsx}"],
+  "ignore": ["**/*.d.ts"],
+  "ignoreDependencies": [
+    "@loadable/component",
+    "@splinetool/react-spline",
+    "@splinetool/runtime",
+    // Build and dev dependencies
+    "vite",
+    "@vitejs/plugin-react",
+    "typescript",
+    "typescript-eslint",
+    // Testing related
+    "vitest",
+    // Type definitions
+    "@types/*"
+  ],
+  "rules": {
+    "classMembers": "warn",
+    "exports": "error",
+    "files": "error",
+    "nsExports": "error",
+    "types": "warn",
+    "duplicates": "error"
+  }
+}

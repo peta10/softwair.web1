@@ -1,0 +1,17 @@
+# www.robotstxt.org
+
+User-agent: *
+Allow: /
+
+# Main pages
+Allow: /product
+Allow: /pricing
+Allow: /time-audit
+Allow: /privacy
+
+# Sitemap
+Sitemap: https://softwair.io/sitemap.xml
+
+# Disallow admin or private areas if they exist in the future
+Disallow: /admin/
+Disallow: /private/
