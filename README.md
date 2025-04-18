@@ -25,8 +25,7 @@ softwair/
 │   │   │   ├── Features.tsx
 │   │   │   └── Steps.tsx
 │   │   └── hero/
-│   │       ├── Hero.tsx
-│   │       └── SplineScene.tsx
+│   │       └── Hero.tsx
 │   ├── data/
 │   │   └── industryQuestionnaires.ts
 │   ├── hooks/
@@ -94,7 +93,6 @@ softwair.io/
 - **Router**: React Router DOM 6.22.3
 - **Animation**: Framer Motion 11.0.8
 - **Icons**: Lucide React 0.344.0
-- **3D Graphics**: Spline Tool (@splinetool/react-spline 2.2.6)
 - **Database**: Supabase
 - **Analytics**: Google Analytics
 

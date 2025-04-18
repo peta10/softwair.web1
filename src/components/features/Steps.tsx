@@ -1,88 +1,79 @@
 import { motion } from 'framer-motion';
-import { Workflow, GitMerge, Zap } from 'lucide-react';
-
-const steps = [
-  {
-    icon: <Workflow className="w-16 h-16 text-[#248AFF]" />,
-    title: "Problem Discovery Audit",
-    description: "Take our free assessment to see how much time you're losing on manual tasks."
-  },
-  {
-    icon: <GitMerge className="w-16 h-16 text-[#248AFF]" />,
-    title: "Custom Solution Plan",
-    description: "We identify inefficiencies and create a tailored solution plan for your business."
-  },
-  {
-    icon: <Zap className="w-16 h-16 text-[#248AFF]" />,
-    title: "Deploy & Optimize",
-    description: "We handle everything from development to deployment, with ongoing optimization."
-  }
-];
 
 export function Steps() {
   return (
-    <div className="py-32 bg-[#0A0B0D]">
-      <div className="container mx-auto px-8 md:px-12 text-center relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-[#248AFF]/5 via-transparent to-[#00FC61]/5 opacity-30 pointer-events-none"></div>
-        <motion.h2 
-          initial={{ opacity: 0, y: 30 }}
+    <section className="py-20">
+      <div className="container mx-auto px-4 md:px-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.8 }}
-          className="text-3xl md:text-5xl font-bold mb-12 md:mb-20 tracking-tight bg-gradient-to-r from-[#00FC61] to-[#248AFF] bg-clip-text text-transparent"
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="text-center mb-16"
         >
-          📊 How We Help You Identify Your Biggest Time-Wasters
-        </motion.h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-          {steps.map((step, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ 
-                opacity: 1, 
-                y: 0,
-                rotateY: [0, 360],
-                scale: [0.8, 1]
-              }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ 
-                duration: 0.8,
-                delay: index * 0.3,
-                rotateY: {
-                  duration: 1.2,
-                  ease: "easeOut"
-                }
-              }}
-              whileHover={{ 
-                scale: 1.05,
-                transition: { duration: 0.3 }
-              }}
-              className="flex flex-col items-center bg-[#248AFF]/5 p-8 rounded-2xl border border-[#248AFF]/20 backdrop-blur-sm relative overflow-hidden group"
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-[#248AFF]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <motion.div 
-                className="mb-6"
-                animate={{ 
-                  rotateZ: [0, -10, 10, -10, 0],
-                  y: [0, -5, 5, -5, 0]
-                }}
-                transition={{ 
-                  duration: 5,
-                  repeat: Infinity,
-                  repeatType: "reverse",
-                  ease: "easeInOut"
-                }}
-              >
-                {step.icon}
-              </motion.div>
-              <h3 className="text-2xl font-semibold mb-4 bg-gradient-to-r from-[#00FC61] to-[#248AFF] bg-clip-text text-transparent">
-                {step.title}
-              </h3>
-              <p className="text-[#99999A] leading-relaxed">{step.description}</p>
-            </motion.div>
-          ))}
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">Project Scope</h2>
+          <p className="text-xl font-semibold mb-2">Our Process, Step by Step</p>
+          <p className="text-[#99999A] max-w-2xl mx-auto">
+            From the initial proposal to the final product at your hand. A clear view of what you can expect at every stage!
+          </p>
+        </motion.div>
+          
+        <div className="max-w-4xl mx-auto text-center mb-16">
+          <h3 className="text-3xl md:text-5xl font-bold mb-16">
+            Your all in one<br />design partner.
+          </h3>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1, duration: 0.5 }}
+            className="flex flex-col items-center text-center"
+          >
+            <div className="bg-[#248AFF]/10 w-16 h-16 rounded-full flex items-center justify-center mb-4">
+              <span className="text-[#248AFF] text-xl font-bold">1</span>
+            </div>
+            <h3 className="text-xl font-semibold mb-2">Discovery</h3>
+            <p className="text-[#99999A]">
+              We learn about your business needs, goals, and current processes to identify potential solutions.
+            </p>
+          </motion.div>
+          
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+            className="flex flex-col items-center text-center"
+          >
+            <div className="bg-[#00FF79]/10 w-16 h-16 rounded-full flex items-center justify-center mb-4">
+              <span className="text-[#00FF79] text-xl font-bold">2</span>
+            </div>
+            <h3 className="text-xl font-semibold mb-2">Design & Development</h3>
+            <p className="text-[#99999A]">
+              Our team creates custom solutions tailored to your specific requirements and business objectives.
+            </p>
+          </motion.div>
+          
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+            className="flex flex-col items-center text-center"
+          >
+            <div className="bg-[#248AFF]/10 w-16 h-16 rounded-full flex items-center justify-center mb-4">
+              <span className="text-[#248AFF] text-xl font-bold">3</span>
+            </div>
+            <h3 className="text-xl font-semibold mb-2">Implementation</h3>
+            <p className="text-[#99999A]">
+              We deploy your custom solutions and provide training to ensure a smooth transition for your team.
+            </p>
+          </motion.div>
         </div>
       </div>
-    </div>
+    </section>
   );
 }

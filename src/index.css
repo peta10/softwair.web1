@@ -11,6 +11,80 @@
     font-display: swap;
     src: url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap') format('woff2');
   }
+  :root {
+    --background: 0 0% 97.6%;
+    --foreground: 0 0% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 3.9%;
+    --primary: 147 100% 42%;
+    --secondary: 214 100% 55%;
+    --primary-light: 147 100% 95%;
+    --secondary-light: 214 100% 95%;
+    --dot-color: 214 100% 65%;
+    --primary-foreground: 0 0% 98%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+    --accent: 0 0% 96.1%;
+    --accent-foreground: 0 0% 9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 0 0% 3.9%;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    --radius: 0.5rem;
+    --brand: 147 100% 42%;
+    --brand-foreground: 147 100% 60%;
+  }
+  .dark {
+    --background: 225 10% 8%;
+    --background-dark: 225 10% 8%;
+    --foreground: 0 0% 98%;
+    --card: 225 10% 8%;
+    --card-foreground: 0 0% 98%;
+    --popover: 225 10% 8%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 147 100% 42%;
+    --secondary: 214 100% 55%;
+    --primary-light: 147 100% 10%;
+    --secondary-light: 214 100% 10%;
+    --dot-color-dark: 214 100% 60%;
+    --primary-foreground: 0 0% 9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 0 0% 83.1%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+    --brand: 147 100% 42%;
+    --brand-foreground: 147 100% 60%;
+  }
+}
+
+/* Marquee animation */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(calc(-100% - var(--gap))); }
+}
+
+.animate-marquee {
+  animation: marquee var(--duration) linear infinite;
 }
 
 :root {
@@ -47,8 +121,6 @@ body {
   overflow-x: hidden;
   font-size: var(--text-base);
   line-height: 1.5;
-  background-color: theme('colors.dark.DEFAULT');
-  color: theme('colors.gray.100');
 }
 
 canvas {
@@ -87,7 +159,7 @@ html {
 /* Smooth scrollbar for Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #248AFF #121316;
+  scrollbar-color: var(--primary) var(--background);
 }
 
 /* Browser-specific styles */
@@ -102,10 +174,6 @@ html {
 }
 
 /* Fallbacks for unsupported features */
-.no-webgl .spline-viewer {
-  display: none;
-}
-
 .no-webp img[src$=".webp"] {
   display: none;
 }
@@ -131,24 +199,64 @@ html {
 }
 
 *::-webkit-scrollbar-track {
-  background: theme('colors.dark.surface');
+  background: var(--background);
 }
 
 *::-webkit-scrollbar-thumb {
-  background-color: theme('colors.secondary.DEFAULT');
+  background-color: var(--primary);
   border-radius: 20px;
-  border: 3px solid theme('colors.dark.surface');
+  border: 3px solid var(--background);
 }
 
-/* Spline viewer optimizations */
-spline-viewer {
-  width: 100%;
-  height: 100%;
-  display: block;
+/* Base styles added by shadcn init */
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
 }
 
-spline-viewer::part(canvas) {
+/* Custom utilities */
+.fade-bottom {
+  mask-image: linear-gradient(to bottom, black 75%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 75%, transparent 100%);
+}
+
+/* Grid Pattern Background */
+.bg-grid-pattern {
+  background-size: 40px 40px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+}
+
+/* Glowing effects */
+.glow-sm {
+  box-shadow: 0 0 20px 2px rgba(0, 224, 112, 0.15);
+}
+
+.glow-md {
+  box-shadow: 0 0 30px 5px rgba(0, 224, 112, 0.2);
+}
+
+/* Animated underline for links */
+.hover-underline {
+  position: relative;
+}
+
+.hover-underline:after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: -2px;
+  left: 0;
+  background: linear-gradient(90deg, #00E070, #248AFF);
+  transition: width 0.3s ease;
+}
+
+.hover-underline:hover:after {
   width: 100%;
-  height: 100%;
-  outline: none;
 }

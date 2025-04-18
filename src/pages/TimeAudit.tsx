@@ -1,14 +1,23 @@
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect, ReactNode } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  ChevronRight, Timer, DollarSign, Building, Home, Calculator, Briefcase, Monitor, 
-  Dumbbell, Factory, Truck, Building2, HardHat, UtensilsCrossed, Hotel, 
-  ShoppingBag, Scale, Stethoscope, GraduationCap 
+  Monitor, Dumbbell, Factory, Truck, Building2, HardHat, UtensilsCrossed, Hotel, 
+  ShoppingBag, Scale, Home, Calculator, DollarSign, Building, Briefcase,
+  Stethoscope, GraduationCap
 } from 'lucide-react';
-import { industries, Industry, Section, Question } from '../data/industryQuestionnaires';
+import { industries } from '../data/industryQuestionnaires';
 import { useAnalytics } from '../hooks/useAnalytics';
+import { useEmailSubmission } from '../hooks/useEmailSubmission';
 
-const industryIcons = {
+// Import our new components
+import { Step1IndustrySelection } from '../components/TimeAudit/Step1IndustrySelection';
+import { Step2Questions } from '../components/TimeAudit/Step2Questions';
+import { Step3ImpactAnalysis } from '../components/TimeAudit/Step3ImpactAnalysis';
+import { Step4Loading } from '../components/TimeAudit/Step4Loading';
+import { Step5Results } from '../components/TimeAudit/Step5Results';
+import { ProgressIndicator } from '../components/TimeAudit/ProgressIndicator';
+
+const industryIcons: Record<string, ReactNode> = {
   'it-itsm': <Monitor className="w-6 h-6 flex-shrink-0" />,
   'fitness': <Dumbbell className="w-6 h-6 flex-shrink-0" />,
   'manufacturing': <Factory className="w-6 h-6 flex-shrink-0" />,
@@ -27,12 +36,14 @@ const industryIcons = {
   'education': <GraduationCap className="w-6 h-6 flex-shrink-0" />,
   'other': <Briefcase className="w-6 h-6 flex-shrink-0" />
 };
-import { useEmailSubmission } from '../hooks/useEmailSubmission';
 
+// Define stricter types for the form data
 interface FormData {
   industry: string;
   email: string;
   answers: Record<string, string | string[]>;
+  timeSaved?: string;
+  monthlyCost?: string;
 }
 
 export function TimeAudit() {
@@ -48,21 +59,69 @@ export function TimeAudit() {
   });
 
   const selectedIndustryData = industries.find(i => i.id === selectedIndustry);
-  const currentSectionData = selectedIndustryData?.sections[currentSection];
+  
+  // Reset form when changing industries
+  useEffect(() => {
+    if (selectedIndustry) {
+      setCurrentSection(0);
+    }
+  }, [selectedIndustry]);
+  
+  // Move to results screen after "calculating"
+  useEffect(() => {
+    if (step === 4) {
+      const timer = setTimeout(() => setStep(5), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [step]);
 
   const handleNext = () => {
     if (currentSection < (selectedIndustryData?.sections.length || 0) - 1) {
-      setCurrentSection(currentSection + 1);
+      setCurrentSection(prev => prev + 1);
     } else {
-      setStep(step + 1);
-      if (step === 3) {
-        setTimeout(() => setStep(5), 3000);
+      setStep(prev => prev + 1);
+      // Reset to top of page for better UX
+      window.scrollTo(0, 0);
+    }
+  };
+
+  const handleBack = () => {
+    if (currentSection > 0) {
+      setCurrentSection(prev => prev - 1);
+    } else if (step > 1) {
+      setStep(prev => prev - 1);
+      // If going back to industry questions, set to the last section
+      if (step === 3 && selectedIndustryData) {
+        setCurrentSection(selectedIndustryData.sections.length - 1);
       }
     }
+    // Reset to top of page for better UX
     window.scrollTo(0, 0);
   };
 
-  const handleAnswer = (questionId: string, answer: string | string[]) => {
+  const handleReset = () => {
+    setStep(1);
+    setSelectedIndustry('');
+    setCurrentSection(0);
+    setFormData({
+      industry: '',
+      email: '',
+      answers: {}
+    });
+    window.scrollTo(0, 0);
+  };
+
+  const handleIndustrySelect = (industryId: string) => {
+    setSelectedIndustry(industryId);
+    setFormData(prev => ({ 
+      ...prev, 
+      industry: industryId,
+      answers: {} // Reset answers when industry changes
+    }));
+    trackEvent('select_industry', { industry: industryId });
+  };
+
+  const handleAnswer = (questionId: string, answer: string) => {
     setFormData(prev => ({
       ...prev,
       answers: {
@@ -72,340 +131,90 @@ export function TimeAudit() {
     }));
   };
 
-  const canProceed = () => {
-    if (!currentSectionData) return false;
-    return currentSectionData.questions.every(q => 
-      formData.answers[q.id] !== undefined && 
-      (Array.isArray(formData.answers[q.id]) ? 
-        (formData.answers[q.id] as string[]).length > 0 : 
-        formData.answers[q.id] !== '')
-    );
+  const handleTimeSaved = (value: string) => {
+    setFormData(prev => ({ ...prev, timeSaved: value }));
   };
 
+  const handleMonthlyCost = (value: string) => {
+    setFormData(prev => ({ ...prev, monthlyCost: value }));
+  };
+
+  const handleSetEmail = (email: string) => {
+    setFormData(prev => ({ ...prev, email }));
+  };
+
+  const handleSubmitEmail = async (industry: string, email: string, data: object) => {
+    await submitEmail('time-audit', email, {
+      industry,
+      ...data
+    });
+    
+    trackEvent('join_waitlist', {
+      industry,
+      ...data
+    });
+  };
+
+  // Function to render appropriate step component
   const renderStep = () => {
     switch (step) {
       case 1:
         return (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="space-y-8"
-          >
-            <h2 className="text-3xl font-bold mb-8">Step 1: Select Your Industry</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {industries.map((industry) => (
-                <motion.button
-                  key={industry.id}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => {
-                    setSelectedIndustry(industry.id);
-                    setFormData({ industry: industry.id, email: '', answers: {} });
-                    trackEvent('select_industry', { industry: industry.id });
-                  }}
-                  className={`p-4 rounded-xl text-left flex items-center gap-4 transition-all duration-300 ${
-                    selectedIndustry === industry.id
-                      ? 'bg-[#00FF79] text-[#121316]'
-                      : 'bg-[#248AFF]/5 hover:bg-[#248AFF]/10 text-white'
-                  }`}
-                >
-                  {industryIcons[industry.id as keyof typeof industryIcons] || industryIcons.other}
-                  <span>{industry.label}</span>
-                </motion.button>
-              ))}
-            </div>
-            {selectedIndustry && (
-              <motion.button
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                onClick={handleNext}
-                className="mt-8 px-8 py-4 bg-[#00FF79] rounded-xl text-[#121316] font-semibold hover:bg-[#00FF79]/90 transition-all duration-300 flex items-center gap-2"
-              >
-                Continue <ChevronRight className="w-5 h-5" />
-              </motion.button>
-            )}
-          </motion.div>
+          <Step1IndustrySelection
+            industries={industries}
+            selectedIndustry={selectedIndustry}
+            onIndustrySelect={handleIndustrySelect}
+            onNext={handleNext}
+            industryIcons={industryIcons}
+          />
         );
 
       case 2:
+        if (!selectedIndustryData || !selectedIndustryData.sections[currentSection]) {
+          return null; // Guard against invalid data
+        }
         return (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="space-y-8"
-          >
-            <h2 className="text-3xl font-bold mb-8">{currentSectionData?.title || 'Industry Questions'}</h2>
-            
-            <div className="space-y-12">
-              {currentSectionData?.questions.map((question) => (
-                <div key={question.id} className="space-y-4">
-                  <h3 className="text-xl font-semibold">{question.text}</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {question.options?.map((option) => (
-                      <motion.button
-                        key={option}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => handleAnswer(question.id, option)}
-                        className={`p-4 rounded-xl text-left transition-all duration-300 ${
-                          formData.answers[question.id] === option
-                            ? 'bg-[#00FF79] text-[#121316]'
-                            : 'bg-[#248AFF]/5 hover:bg-[#248AFF]/10'
-                        }`}
-                      >
-                        {option}
-                      </motion.button>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {canProceed() && (
-              <motion.button
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                onClick={handleNext}
-                className="mt-8 px-8 py-4 bg-[#00FF79] rounded-xl text-[#121316] font-semibold hover:bg-[#00FF79]/90 transition-all duration-300 flex items-center gap-2"
-              >
-                {currentSection < (selectedIndustryData?.sections.length || 0) - 1 ? 'Next Section' : 'Continue'} <ChevronRight className="w-5 h-5" />
-              </motion.button>
-            )}
-          </motion.div>
+          <Step2Questions
+            currentSection={selectedIndustryData.sections[currentSection]}
+            sectionIndex={currentSection}
+            totalSections={selectedIndustryData.sections.length}
+            answers={formData.answers}
+            onAnswer={handleAnswer}
+            onNext={handleNext}
+            onBack={handleBack}
+          />
         );
 
       case 3:
         return (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="space-y-8"
-          >
-            <h2 className="text-3xl font-bold mb-8">Step 3: Impact Analysis</h2>
-            
-            <div className="space-y-12">
-              <div className="space-y-4">
-                <h3 className="text-xl font-semibold flex items-center gap-2">
-                  <Timer className="w-6 h-6 text-[#00FF79]" />
-                  If you could automate your most time-consuming task, how much time would you save per week?
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {['Less than 5 hours', '5-10 hours', '10-20 hours', 'More than 20 hours'].map((option) => (
-                    <motion.button
-                      key={option}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => setFormData(prev => ({ ...prev, timeSaved: option }))}
-                      className={`p-4 rounded-xl text-center transition-all duration-300 ${
-                        formData.timeSaved === option
-                          ? 'bg-[#00FF79] text-[#121316]'
-                          : 'bg-[#248AFF]/5 hover:bg-[#248AFF]/10'
-                      }`}
-                    >
-                      {option}
-                    </motion.button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <h3 className="text-xl font-semibold flex items-center gap-2">
-                  <DollarSign className="w-6 h-6 text-[#00FF79]" />
-                  How much do you estimate lost time is costing your business per month?
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {['Less than $500', '$500 - $2,000', '$2,000 - $5,000', 'More than $5,000'].map((option) => (
-                    <motion.button
-                      key={option}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => setFormData(prev => ({ ...prev, monthlyCost: option }))}
-                      className={`p-4 rounded-xl text-center transition-all duration-300 ${
-                        formData.monthlyCost === option
-                          ? 'bg-[#00FF79] text-[#121316]'
-                          : 'bg-[#248AFF]/5 hover:bg-[#248AFF]/10'
-                      }`}
-                    >
-                      {option}
-                    </motion.button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {formData.timeSaved && formData.monthlyCost && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="mt-8 flex justify-center"
-              >
-                <button
-                  onClick={handleNext}
-                  className="px-8 py-4 bg-[#00FF79] rounded-xl text-[#121316] font-semibold hover:bg-[#00FF79]/90 transition-all duration-300 flex items-center gap-2"
-                >
-                  Calculate Your Results <ChevronRight className="w-5 h-5" />
-                </button>
-              </motion.div>
-            )}
-          </motion.div>
+          <Step3ImpactAnalysis
+            timeSaved={formData.timeSaved}
+            monthlyCost={formData.monthlyCost}
+            onSetTimeSaved={handleTimeSaved}
+            onSetMonthlyCost={handleMonthlyCost}
+            onNext={handleNext}
+            onBack={handleBack}
+          />
         );
 
       case 4:
-        return (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center space-y-8"
-          >
-            <div className="flex flex-col items-center justify-center gap-8">
-              <motion.div
-                animate={{
-                  scale: [1, 1.2, 1],
-                  rotate: [0, 360],
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                }}
-                className="w-16 h-16 border-4 border-[#00FF79] border-t-transparent rounded-full"
-              />
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.5, delay: 0.5 }}
-                className="text-xl text-[#99999A]"
-              >
-                Analyzing your responses...
-              </motion.div>
-              <div className="flex gap-4 mt-4">
-                {[1, 2, 3].map((i) => (
-                  <motion.div
-                    key={i}
-                    className="w-3 h-3 rounded-full bg-[#00FF79]"
-                    animate={{
-                      y: [-10, 0, -10],
-                      opacity: [0.5, 1, 0.5],
-                    }}
-                    transition={{
-                      duration: 1,
-                      repeat: Infinity,
-                      delay: i * 0.2,
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
-          </motion.div>
-        );
+        return <Step4Loading />;
 
       case 5:
         return (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="text-center space-y-8"
-          >
-            <h2 className="text-3xl font-bold mb-8">Your Time Audit Results</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.2 }}
-                className="bg-[#248AFF]/5 p-8 rounded-xl border border-[#248AFF]/20"
-              >
-                <h3 className="text-2xl font-semibold mb-4 text-[#00FF79]">Time Savings</h3>
-                <p className="text-4xl font-bold mb-2">
-                  {formData.timeSaved === 'Less than 5 hours' ? '20' :
-                   formData.timeSaved === '5-10 hours' ? '40' :
-                   formData.timeSaved === '10-20 hours' ? '80' : '100'}
-                </p>
-                <p className="text-[#99999A]">Hours Saved Monthly</p>
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.4 }}
-                className="bg-[#248AFF]/5 p-8 rounded-xl border border-[#248AFF]/20"
-              >
-                <h3 className="text-2xl font-semibold mb-4 text-[#00FF79]">Cost Savings</h3>
-                <p className="text-4xl font-bold mb-2">
-                  ${formData.monthlyCost === 'Less than $500' ? '6,000' :
-                    formData.monthlyCost === '$500 - $2,000' ? '24,000' :
-                    formData.monthlyCost === '$2,000 - $5,000' ? '60,000' : '100,000'}
-                </p>
-                <p className="text-[#99999A]">Potential Yearly Savings</p>
-              </motion.div>
-            </div>
-            <p className="text-xl text-[#99999A]">
-              Based on your responses, we've calculated your potential time and cost savings through automation.
-            </p>
-            <div className="bg-[#248AFF]/5 p-8 rounded-xl space-y-6">
-              <h3 className="text-xl font-semibold">Want to be the first to know when we have a solution?</h3>
-              <form 
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  const handleSubmit = async () => {
-                    if (!formData.email) return;
-                    
-                    await submitEmail('time-audit', formData.email, {
-                      industry: formData.industry,
-                      time_saved: formData.timeSaved,
-                      cost_savings: formData.monthlyCost
-                    });
-                    
-                    trackEvent('join_waitlist', {
-                      industry: formData.industry,
-                      time_saved: formData.timeSaved,
-                      cost_savings: formData.monthlyCost
-                    });
-                  };
-                  handleSubmit();
-                }}
-                className="flex flex-col md:flex-row gap-4 max-w-md mx-auto"
-              >
-                <input
-                  type="email"
-                  required
-                  placeholder="Enter your email"
-                  value={formData.email}
-                  onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                  className="flex-1 px-6 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-white/50 focus:outline-none focus:border-[#00FC61]"
-                />
-                <button
-                  type="submit"
-                  className={`px-8 py-3 bg-[#00FF79] rounded-xl text-[#121316] font-semibold hover:bg-[#00FF79]/90 transition-all duration-300 ${
-                    isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? 'Submitting...' : 'Join Waitlist'}
-                </button>
-              </form>
-              {submitError && (
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="text-red-500 mt-4"
-                >
-                  {submitError}
-                </motion.p>
-              )}
-              {success && (
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="text-[#00FF79] mt-4"
-                >
-                  Thanks! We'll notify you when we launch.
-                </motion.p>
-              )}
-            </div>
-          </motion.div>
+          <Step5Results
+            timeSaved={formData.timeSaved || ''}
+            monthlyCost={formData.monthlyCost || ''}
+            industry={formData.industry}
+            email={formData.email}
+            onSetEmail={handleSetEmail}
+            onSubmitEmail={handleSubmitEmail}
+            isSubmitting={isSubmitting}
+            submitError={submitError}
+            success={success}
+            onBack={handleBack}
+            onReset={handleReset}
+          />
         );
 
       default:
@@ -429,7 +238,17 @@ export function TimeAudit() {
             Let's identify where your business is losing valuable time and calculate the potential savings from automation.
           </p>
           
-          {renderStep()}
+          {/* Progress indicator only shown for steps 1-3 and 5 */}
+          {step !== 4 && (
+            <ProgressIndicator 
+              currentStep={step <= 3 ? step : 4} 
+              totalSteps={4} 
+            />
+          )}
+          
+          <AnimatePresence mode="wait">
+            {renderStep()}
+          </AnimatePresence>
         </motion.div>
       </div>
     </div>
