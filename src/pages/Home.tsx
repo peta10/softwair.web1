@@ -9,6 +9,9 @@ import InteractiveServices from '../components/features/InteractiveServices';
 // import ServiceNetwork3D from '../components/features/ServiceNetwork3D';
 // import { ServiceNetworkSVG } from '../components/features/ServiceNetworkSVG';
 import React from 'react';
+// import InteractiveProcessFlow from '../components/process/InteractiveProcessFlow';
+import EnhancedGlassFlowBentoGrid from '../components/bento-process-component';
+import FAQSection from '../components/FAQSection';
 
 export function Home() {
   return (
@@ -17,6 +20,8 @@ export function Home() {
       
       <HeroDemo />
       <InteractiveServices />
+      <EnhancedGlassFlowBentoGrid />
+      <FAQSection />
       {/* <CoreSolutions /> */}{/* Removed duplicate Services section */}
       {/* <Steps /> */}{/* Removed Steps component */}
       {/* <ServiceNetworkSVG /> */}{/* Removed SVG network from Home */}

@@ -1,8 +1,10 @@
-import { motion } from 'framer-motion';
-import { Zap, ArrowRight } from 'lucide-react';
+import { motion, useAnimation } from 'framer-motion';
+import { Zap, ArrowRight, Terminal } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
 import StickyScrollRevealDemo from '@/components/sticky-scroll-reveal-demo';
 import { FeatureItem } from '@/components/FeatureItem';
 import { ScrollAnimatedSection } from '@/components/ui/scroll-animated-section';
+import { MinimalDashboard } from './MinimalDashboard';
 
 // Animation for the grid container (stagger children)
 const gridVariants = {
@@ -25,6 +27,85 @@ const lineVariants = {
 };
 
 export function GrowthEngine() {
+  // State for interactive elements
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [showNotification, setShowNotification] = useState(false);
+  const [showAchievement, setShowAchievement] = useState(false);
+  const [user, setUser] = useState({
+    name: "Sarah",
+    company: "Astral Design",
+    role: "Marketing Director"
+  });
+  const containerRef = useRef(null);
+  const controls = useAnimation();
+  
+  // Personal welcome messages
+  const welcomeMessages = [
+    `Welcome back, ${user.name}`,
+    `Good ${new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'}, ${user.name}`,
+    `${user.name}'s Dashboard`,
+    `${user.company} Analytics`
+  ];
+  const [welcomeMessage, setWelcomeMessage] = useState(welcomeMessages[0]);
+  
+  // Success stories for storytelling element
+  const successStories = [
+    { metric: "Time Saved", value: "23 hrs/week", roi: "+32%" },
+    { metric: "Lead Response", value: "2.4 minutes", roi: "+78%" },
+    { metric: "Client Retention", value: "93%", roi: "+15%" },
+    { metric: "Team Productivity", value: "41 tasks/day", roi: "+27%" }
+  ];
+  const [currentStory, setCurrentStory] = useState(0);
+
+  // Update current time
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    
+    return () => clearInterval(timer);
+  }, []);
+
+  // Show notifications periodically
+  useEffect(() => {
+    const notificationInterval = setInterval(() => {
+      setShowNotification(true);
+      setTimeout(() => setShowNotification(false), 4000);
+    }, 15000);
+    
+    return () => clearInterval(notificationInterval);
+  }, []);
+
+  // Change welcome message periodically
+  useEffect(() => {
+    const messageInterval = setInterval(() => {
+      setWelcomeMessage(welcomeMessages[Math.floor(Math.random() * welcomeMessages.length)]);
+    }, 10000);
+    
+    return () => clearInterval(messageInterval);
+  }, []);
+  
+  // Rotate success stories
+  useEffect(() => {
+    const storyInterval = setInterval(() => {
+      setCurrentStory(prev => (prev + 1) % successStories.length);
+    }, 8000);
+    
+    return () => clearInterval(storyInterval);
+  }, []);
+
+  // Subtle float animation for dashboard
+  useEffect(() => {
+    controls.start({
+      y: [0, -6, 0],
+      transition: {
+        duration: 7,
+        repeat: Infinity,
+        repeatType: "reverse"
+      }
+    });
+  }, [controls]);
+
   // Updated copy
   const benefits = [
     "Eliminate repetitive manual tasks",
@@ -44,13 +125,23 @@ export function GrowthEngine() {
     "Project Management Automation"
   ];
 
+  // Format current time
+  const formattedTime = currentTime.toLocaleTimeString('en-US', { 
+    hour: '2-digit', 
+    minute: '2-digit',
+    hour12: false 
+  });
+
+  // Format current date
+  const formattedDate = `${currentTime.getFullYear()}-${String(currentTime.getMonth() + 1).padStart(2, '0')}-${String(currentTime.getDate()).padStart(2, '0')}`;
+
   return (
     <div className="relative">
       {/* Subtle grid background pattern */}
       <div className="absolute inset-0 bg-grid-pattern opacity-5 pointer-events-none"></div>
       
       {/* Section 1: Hero section with matching black background */}
-      <div className="w-full bg-[#1a1b1f] pt-24 pb-16">
+      <div className="w-full bg-[#1a1b1f] pt-24 pb-16 relative">
         {/* Decorative elements */}
         <div className="absolute top-32 -left-16 w-36 h-36 bg-[#00FF79]/5 rounded-full blur-3xl opacity-30"></div>
         <div className="absolute top-96 -right-16 w-48 h-48 bg-[#00FF79]/5 rounded-full blur-3xl opacity-30"></div>
@@ -58,7 +149,7 @@ export function GrowthEngine() {
         <div className="max-w-6xl mx-auto px-4 md:px-8 relative">
           <ScrollAnimatedSection direction="up" delayMultiplier={0}>
             <div className="grid grid-cols-12 gap-8 items-center">
-              <div className="col-span-12 text-center">
+              <div className="col-span-12 md:col-span-6 text-center md:text-left order-2 md:order-1">
                 {/* Enhanced icon with animation and glow */}
                 <div className="relative inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#00FF79]/10 mb-8
                               before:absolute before:inset-0 before:rounded-full before:bg-[#00FF79]/10 before:animate-pulse before:blur-lg before:-z-10">
@@ -71,7 +162,7 @@ export function GrowthEngine() {
                 </h1>
                 
                 {/* Enhanced description matching Home page */}
-                <p className="text-lg md:text-xl text-white max-w-3xl mx-auto leading-relaxed">
+                <p className="text-lg md:text-xl text-white max-w-3xl mx-auto md:mx-0 leading-relaxed">
                   One unified system that automates 
                   <span className="text-[#00FF79]"> lead capture</span>, 
                   <span className="text-[#00FF79]"> booking</span>, 
@@ -80,19 +171,35 @@ export function GrowthEngine() {
                   —so you scale faster with less overhead.
                 </p>
                 
+                {/* Interactive CTA with micro-interactions */}
+                <motion.div 
+                  className="mt-8 inline-block"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <a 
+                    href="#integrated-automation-system" 
+                    className="px-6 py-3 bg-[#00FF79] text-black font-medium rounded-xl transition-all duration-300 group flex items-center relative overflow-hidden"
+                  >
+                    <Zap className="w-4 h-4 mr-2 text-black" />
+                    <span className="relative z-10">Explore Our Solution</span>
+                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform relative z-10" />
+                  </a>
+                </motion.div>
+                
                 {/* Visual bridge to connect sections */}
                 <div className="py-6 mt-8">
                   <motion.div 
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3, duration: 0.5 }}
-                    className="flex flex-col items-center"
+                    className="flex flex-col items-center md:items-start"
                   >
                     <div className="flex space-x-2 mb-4">
                       {[0, 1, 2].map((i) => (
                         <div 
                           key={i} 
-                          className="w-2 h-2 rounded-full bg-[#00FF79]/60"
+                          className="w-2 h-2 rounded-none bg-[#00FF79]/60"
                         ></div>
                       ))}
                     </div>
@@ -100,22 +207,61 @@ export function GrowthEngine() {
                   </motion.div>
                 </div>
               </div>
+              
+              {/* Minimalistic Dashboard Section */}
+              <div className="col-span-12 md:col-span-6 order-1 md:order-2 mb-8 md:mb-0">
+                <motion.div
+                  ref={containerRef}
+                  animate={controls}
+                >
+                  <MinimalDashboard
+                    formattedTime={formattedTime}
+                    formattedDate={formattedDate}
+                  />
+                </motion.div>
+                
+                {/* Minimalistic Caption */}
+                <motion.div
+                  className="mt-2 text-center md:text-right text-[10px] text-[#99999A] font-mono"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.5 }}
+                >
+                  v1.4.2 // STATUS: Nominal
+                </motion.div>
+              </div>
             </div>
           </ScrollAnimatedSection>
         </div>
       </div>
         
       {/* Section divider with animation - matching Home page style */}
-      <motion.div 
-        className="w-full h-[2px] bg-gradient-to-r from-transparent via-[#00FF79]/30 to-transparent"
-        variants={lineVariants}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-      ></motion.div>
+      <div className="w-full relative">
+        <motion.div 
+          className="w-full h-[2px] bg-gradient-to-r from-transparent via-[#333333]/50 to-transparent"
+          variants={lineVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+        ></motion.div>
+        
+        {/* Subtle glow effect under divider */}
+        <div className="absolute left-0 right-0 top-0 h-[8px] bg-[#333333]/10 blur-[3px]"></div>
+      </div>
 
       {/* Section 2: Integrated System */}
-      <div id="integrated-automation-system" className="w-full bg-[#1a1b1f] py-12">
+      <div id="integrated-automation-system" className="w-full py-12 relative">
+        {/* Background gradient transition */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#1a1b1f] via-[#151617] to-[#0f1011] -z-10"></div>
+        
+        {/* Strong visual divider */}
+        <div className="absolute left-0 top-0 w-full bg-gradient-to-b from-[#333333]/15 to-transparent h-16 backdrop-blur-sm -z-5"></div>
+        <div className="absolute left-0 top-0 w-full h-1 bg-gradient-to-r from-transparent via-[#444444]/50 to-transparent"></div>
+        
+        {/* Decorative orbs */}
+        <div className="absolute -top-24 right-1/4 w-64 h-64 bg-[#333333]/10 rounded-full blur-[80px] opacity-40"></div>
+        <div className="absolute bottom-1/4 -left-16 w-80 h-80 bg-[#222222]/15 rounded-full blur-[100px] opacity-50"></div>
+        
         <div className="max-w-6xl mx-auto px-4 md:px-8 relative">
           <ScrollAnimatedSection direction="up" delayMultiplier={2} className="relative">
             {/* Enhanced section heading with left border accent */}
@@ -149,7 +295,7 @@ export function GrowthEngine() {
         
       {/* Section divider with animation */}
       <motion.div 
-        className="w-full h-[2px] bg-gradient-to-r from-transparent via-[#00FF79]/30 to-transparent"
+        className="w-full h-[2px] bg-gradient-to-r from-transparent via-[#333333]/50 to-transparent"
         variants={lineVariants}
         initial="hidden"
         whileInView="visible"
@@ -157,7 +303,17 @@ export function GrowthEngine() {
       ></motion.div>
 
       {/* Section 3: Benefits & Features Grids */}
-      <div className="w-full bg-[#1a1b1f] py-12">
+      <div className="w-full py-12 relative">
+        {/* Background gradient transition */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0f1011] via-[#12120f] to-[#141410] -z-10"></div>
+        
+        {/* Decorative accent */}
+        <div className="absolute left-0 top-0 w-full h-1 bg-gradient-to-r from-transparent via-[#333333]/50 to-transparent"></div>
+        <div className="absolute left-0 top-1 w-full h-8 bg-gradient-to-b from-[#333333]/10 to-transparent blur-sm"></div>
+        
+        {/* Additional visual elements */}
+        <div className="absolute right-0 top-1/4 w-72 h-72 bg-[#292929]/10 rounded-full blur-[120px] opacity-40"></div>
+        
         <div className="relative">
           {/* Subtle glow in the background */}
           <div className="absolute inset-0 bg-[#00FF79]/5 mix-blend-overlay opacity-30"></div>
@@ -220,7 +376,7 @@ export function GrowthEngine() {
         
       {/* Section divider with animation */}
       <motion.div 
-        className="w-full h-[2px] bg-gradient-to-r from-transparent via-[#00FF79]/30 to-transparent"
+        className="w-full h-[2px] bg-gradient-to-r from-transparent via-[#333333]/50 to-transparent"
         variants={lineVariants}
         initial="hidden"
         whileInView="visible"
@@ -228,7 +384,14 @@ export function GrowthEngine() {
       ></motion.div>
 
       {/* Section 4: Enhanced CTA - with matching background color */}
-      <div className="w-full bg-[#1A1B1F] py-12">
+      <div className="w-full py-12 relative">
+        {/* Background gradient transition */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#141410] via-[#17171a] to-[#1A1B1F] -z-10"></div>
+        
+        {/* Decorative accent */}
+        <div className="absolute left-0 top-0 w-full h-1 bg-gradient-to-r from-transparent via-[#444444]/40 to-transparent"></div>
+        <div className="absolute left-0 top-1 w-full h-8 bg-gradient-to-b from-[#444444]/10 to-transparent blur-sm"></div>
+        
         <div className="max-w-6xl mx-auto px-4 md:px-8 relative">
           <ScrollAnimatedSection direction="up" delayMultiplier={6}>
             {/* Enhanced CTA container with better gradients and shadows */}
