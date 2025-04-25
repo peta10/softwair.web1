@@ -5,7 +5,6 @@ import {
     Industry, 
     BusinessSize as BusinessSizeType, // Renaming type import to avoid conflict
     Role as RoleType,                // Renaming type import to avoid conflict
-    businessSizes, 
     userRoles 
 } from '../../data/industryQuestionnaires';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"; // Correct path assuming shadcn default structure

@@ -21,14 +21,26 @@ interface Step2Props {
 }
 
 const checkSectionCompletion = (section: Section, answers: Record<string, any>): boolean => {
-  return section.questions.every(q => {
+  // Debug check which questions are missing answers
+  const unansweredQuestions = section.questions.filter(q => {
     const answer = answers[q.id];
-    if (answer === undefined || answer === null) return false;
-    if (q.type === 'multiple' && Array.isArray(answer) && answer.length === 0) return false;
-    if (typeof answer === 'string' && answer.trim() === '') return false;
-    if (q.type === 'timeEstimate' && (answer?.value === undefined || answer?.unit === undefined)) return false;
-    return true;
+    const isAnswered = 
+      answer !== undefined && 
+      answer !== null && 
+      !(typeof answer === 'string' && answer.trim() === '') &&
+      !(Array.isArray(answer) && answer.length === 0);
+    
+    if (!isAnswered) {
+      console.log(`Question ${q.id} is missing an answer`);
+    }
+    
+    return !isAnswered;
   });
+  
+  console.log('Unanswered questions:', unansweredQuestions.map(q => q.id));
+  
+  // All questions must have some answer
+  return unansweredQuestions.length === 0;
 };
 
 export const Step2Questions: React.FC<Step2Props> = ({
@@ -41,6 +53,11 @@ export const Step2Questions: React.FC<Step2Props> = ({
   onBack
 }) => {
   const canProceed = checkSectionCompletion(currentSection, answers);
+  
+  // Debug logging for the issue with timeEstimate questions
+  console.log('Current section questions:', currentSection.questions);
+  console.log('Current answers:', answers);
+  console.log('canProceed value:', canProceed);
 
   const renderQuestionInput = (question: QuestionType) => {
     const currentAnswer = answers[question.id];
@@ -63,33 +80,30 @@ export const Step2Questions: React.FC<Step2Props> = ({
       case 'multiple':
         return (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {question.options?.map((option) => (
-              <div key={option} className="flex items-center space-x-3 bg-[#248AFF]/5 hover:bg-[#248AFF]/10 p-4 rounded-xl transition-all duration-300">
-                <Checkbox
-                  id={`${question.id}-${option}`}
-                  checked={Array.isArray(currentAnswer) && currentAnswer.includes(option)}
-                  onCheckedChange={(checked) => {
+            {question.options?.map((option) => {
+              const isSelected = Array.isArray(currentAnswer) && currentAnswer.includes(option);
+              return (
+                <OptionButton
+                  key={option}
+                  option={option}
+                  isSelected={isSelected}
+                  onClick={() => {
                     const currentSelection = Array.isArray(currentAnswer) ? [...currentAnswer] : [];
-                    if (checked) {
-                      currentSelection.push(option);
-                    } else {
+                    if (isSelected) {
+                      // Remove option if already selected
                       const index = currentSelection.indexOf(option);
                       if (index > -1) {
                         currentSelection.splice(index, 1);
                       }
+                    } else {
+                      // Add option if not selected
+                      currentSelection.push(option);
                     }
                     onAnswer(question.id, currentSelection);
                   }}
-                  className="border-white/30 data-[state=checked]:bg-[#00FF79] data-[state=checked]:text-[#121316]"
                 />
-                <Label 
-                    htmlFor={`${question.id}-${option}`} 
-                    className="text-white font-medium cursor-pointer select-none"
-                >
-                  {option}
-                </Label>
-              </div>
-            ))}
+              );
+            })}
           </div>
         );
 
@@ -144,6 +158,10 @@ export const Step2Questions: React.FC<Step2Props> = ({
             question.timeOptions?.hoursPerWeek ? 'Per Week' :
             question.timeOptions?.hoursPerMonth ? 'Per Month' :
             '';
+         
+         // Debug log for this specific timeEstimate question
+         console.log(`Question ${question.id} current answer:`, currentAnswer);
+         
          return (
             <div className="space-y-4">
                 <p className="text-sm text-[#99999A]">{`Select time spent ${unitLabel}`}</p>
@@ -153,7 +171,10 @@ export const Step2Questions: React.FC<Step2Props> = ({
                         key={option}
                         option={option}
                         isSelected={currentAnswer === option}
-                        onClick={() => onAnswer(question.id, option)} 
+                        onClick={() => {
+                          console.log(`Setting answer for ${question.id} to:`, option);
+                          onAnswer(question.id, option);
+                        }}
                     />
                     ))}
                 </div>
@@ -215,7 +236,13 @@ export const Step2Questions: React.FC<Step2Props> = ({
           Back
         </NavigationButton>
         
-        <NavigationButton onClick={onNext} disabled={!canProceed}>
+        <NavigationButton 
+          onClick={() => {
+            console.log('Finish button clicked, canProceed =', canProceed);
+            onNext();
+          }} 
+          disabled={!canProceed}
+        >
             {sectionIndex < totalSections - 1 ? 'Next Section' : 'Finish & Calculate'} 
         </NavigationButton>
       </div>

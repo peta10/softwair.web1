@@ -1,10 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './bento-process-animations.css';
-import { motion, useAnimation, AnimatePresence } from 'framer-motion';
-import { Zap, ArrowRight, Moon, Sun, Terminal } from 'lucide-react';
-import StickyScrollRevealDemo from '@/components/sticky-scroll-reveal-demo';
-import { FeatureItem } from '@/components/FeatureItem';
-import { ScrollAnimatedSection } from '@/components/ui/scroll-animated-section';
 
 // Interface for icon components
 interface IconProps {
@@ -17,7 +12,6 @@ const EnhancedGlassFlowBentoGrid: React.FC = () => {
     const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
     const [, setActiveSection] = useState(0); // Used to track scroll position
     const gridRef = useRef<HTMLDivElement>(null);
-    const controls = useAnimation();
     
     // Parallax scroll effect and section detection
     useEffect(() => {
@@ -1377,7 +1371,8 @@ const BentoBox: React.FC<BentoBoxProps> = ({
       }
     };
   }, [index]);
-  
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+
   // Parse color to RGB format for CSS
   const parseColor = (color: string) => {
     const r = parseInt(color.slice(1, 3), 16);

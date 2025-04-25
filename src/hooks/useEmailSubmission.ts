@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '../lib/supabase';
 
-type SourcePage = 'product' | 'pricing' | 'time-audit';
+type SourcePage = 'product' | 'pricing' | 'time-audit' | 'time-audit-v2';
 
 export function useEmailSubmission() {
   const [isSubmitting, setIsSubmitting] = useState(false);

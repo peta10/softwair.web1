@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import {
     Headset, RefreshCw, Star, TrendingUp, 
-    Megaphone, BarChartHorizontal, ArrowRight
+    Megaphone, BarChartHorizontal
 } from 'lucide-react';
 import { useMediaQuery } from '../../hooks/use-media-query';
 
@@ -68,6 +68,16 @@ const nodesData = [
     }, 
 ];
 
+// Define central node data
+const centralNodeData = {
+    id: -1,
+    name: "Central Hub",
+    color: '#00FF79',
+    icon: null, // Placeholder - decide if an icon is needed
+    description: "Integrating all your automated services.",
+    flowNumber: 0
+};
+
 const nodeConnections: { [key: number]: number[] } = {
     '-1': [0, 1, 2, 3, 4, 5], 
     0: [-1, 1],
@@ -124,10 +134,6 @@ export function ServiceNetworkSVG() {
 
     const handleClick = (index: number) => {
         setSelectedIndex(index);
-    };
-
-    const handleNextStep = () => {
-        // Implementation of handleNextStep
     };
 
     const handleShowOverview = () => {

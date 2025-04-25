@@ -167,7 +167,7 @@ export function InteractiveServices({ className }: InteractiveServicesProps) {
   }, [services.length])
 
   return (
-    <section id="services" className={`w-full py-20 ${className || ""}`}>
+    <section id="services" className={`relative z-10 w-full pt-32 pb-20 ${className || ""}`}>
       <div className="container mx-auto px-4 md:px-8">
         <div className="flex flex-col gap-12">
           <div className="flex flex-col items-center text-center max-w-3xl mx-auto">

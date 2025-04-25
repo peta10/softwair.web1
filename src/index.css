@@ -42,6 +42,29 @@
     --radius: 0.5rem;
     --brand: 147 100% 42%;
     --brand-foreground: 147 100% 60%;
+
+    /* Added Colors for Gradient Consistency - Start */
+    --ebony-clay: #1b1f29; /* Original */
+    --shark: #1c1c24; /* Original */
+    --cod-gray: #1c1c1c; /* Original */
+    --mirage: #1c2434; /* Original */
+    /* --mirage: #1c243c; // Duplicate definition */
+    /* --ebony-clay: #1c242c; // Duplicate definition */
+    /* --ebony-clay: #242c34; // Duplicate definition */
+    --steel-gray: #1c1c2c;
+    --charade: #242431;
+    /* --ebony-clay: #242f44; // Duplicate definition */
+    /* --cod-gray: #1c1c1c; // Duplicate definition */
+    /* --shark: #1c1c24; // Duplicate definition */
+    --outer-space: #1c2424;
+    --ebony-clay: #1e242c; /* Final --ebony-clay */
+    /* --cod-gray: #201c1c; // Duplicate definition */
+    --thunder: #241c20;
+    --cod-gray: #201c1c; /* Final --cod-gray */
+    /* --cod-gray: #201c1c; // Duplicate definition */
+    /* --cod-gray: #201c1c; // Duplicate definition */
+    /* --cod-gray: #201c1c; // Duplicate definition */
+    /* Added Colors for Gradient Consistency - End */
   }
   .dark {
     --background: 225 10% 8%;
@@ -75,6 +98,10 @@
     --brand: 147 100% 42%;
     --brand-foreground: 147 100% 60%;
   }
+  .theme {
+    --animate-aurora: aurora 8s ease-in-out infinite alternate;
+    --animate-rippling: rippling var(--duration) ease-out;
+  }
 }
 
 /* Marquee animation */
@@ -91,14 +118,14 @@
   /* Base sizes */
   --base-font: 16px;
   --scale-ratio: 1.25;
-  
+
   /* Fluid spacing */
   --space-xs: clamp(0.75rem, 0.7vw, 1rem);
   --space-sm: clamp(1rem, 1.5vw, 1.5rem);
   --space-md: clamp(1.5rem, 2.5vw, 2.5rem);
   --space-lg: clamp(2rem, 4vw, 4rem);
   --space-xl: clamp(3rem, 6vw, 6rem);
-  
+
   /* Fluid typography */
   --text-xs: clamp(0.75rem, 1vw, 0.875rem);
   --text-sm: clamp(0.875rem, 1.2vw, 1rem);
@@ -148,7 +175,7 @@ html {
   .text-fluid-2xl { font-size: var(--text-2xl); }
   .text-fluid-3xl { font-size: var(--text-3xl); }
   .text-fluid-4xl { font-size: var(--text-4xl); }
-  
+
   .space-fluid-xs { padding: var(--space-xs); }
   .space-fluid-sm { padding: var(--space-sm); }
   .space-fluid-md { padding: var(--space-md); }
@@ -280,4 +307,53 @@ html {
   background-image: 
     linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+}
+
+@theme inline {
+  @keyframes aurora {
+  0% {
+    background-position: 0% 50%;
+    transform: rotate(-5deg) scale(0.9);
+    }
+  25% {
+    background-position: 50% 100%;
+    transform: rotate(5deg) scale(1.1);
+    }
+  50% {
+    background-position: 100% 50%;
+    transform: rotate(-3deg) scale(0.95);
+    }
+  75% {
+    background-position: 50% 0%;
+    transform: rotate(3deg) scale(1.05);
+    }
+  100% {
+    background-position: 0% 50%;
+    transform: rotate(-5deg) scale(0.9);
+    }
+  }
+  @keyframes rippling {
+  0% {
+    opacity: 1;
+    }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+    }
+  }
+}
+
+@keyframes aurora {
+  from {
+    background-position: 0% 50%;
+  }
+  to {
+    background-position: 100% 50%;
+  }
+}
+
+.animate-aurora {
+  animation-name: aurora;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
 }

@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 import { Calendar } from 'lucide-react';
-import { ThemeToggleButton } from '@/components/ui/theme-toggle-button';
+import { ThemeToggleButton } from '../components/ui/theme-toggle-button';
 
 export function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);

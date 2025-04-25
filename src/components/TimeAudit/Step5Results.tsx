@@ -36,6 +36,25 @@ interface Step5Props {
   onReset: () => void;
 }
 
+// Function to parse time strings like "Less than 2 hours", "2-5 hours", "More than 10 hours"
+const parseTimeValue = (value: string): number => {
+  if (value.toLowerCase().includes('less than')) {
+    const match = value.match(/(\d+)/);
+    return match ? parseInt(match[1]) * 0.5 : 0; // Estimate as half the value
+  } else if (value.toLowerCase().includes('more than')) {
+    const match = value.match(/(\d+)/);
+    return match ? parseInt(match[1]) * 1.25 : 0; // Estimate as 1.25 times the value
+  } else {
+    const match = value.match(/(\d+)[-\s]*(\d+)?/);
+    if (match) {
+        const minHours = parseInt(match[1]);
+        const maxHours = match[2] ? parseInt(match[2]) : minHours;
+        return (minHours + maxHours) / 2; // Average of the range
+    }
+  }
+  return 0; // Default if parsing fails
+};
+
 // --- Placeholder Calculation Logic --- 
 // TODO: Refine this significantly. Needs access to question definitions
 // and more sophisticated logic based on markdown requirements.
@@ -44,41 +63,107 @@ const calculateResults = (formData: FormData) => {
     let potentialHoursAutomated = 0;
     let topTasks: { text: string, id: string, hours: number }[] = [];
     let automationScore = 0;
+    
+    console.log('--- Calculating Results --- ');
+    console.log('Industry:', formData.industry, 'Role:', formData.role, 'Size:', formData.businessSize);
+    console.log('Raw Answers:', JSON.stringify(formData.answers, null, 2));
 
-    // Find the selected industry data to potentially get question text
-    // Note: This is inefficient; ideally, pass questions or pre-process results
-    const industryData = industries.find(i => i.id === formData.industry);
+    // Build a map of all questions for easy lookup
     const allQuestions: Record<string, QuestionType> = {};
     industries.forEach(ind => ind.sections.forEach(sec => sec.questions.forEach(q => allQuestions[q.id] = q)));
 
     Object.entries(formData.answers).forEach(([key, value]) => {
         const question = allQuestions[key];
-        if (question?.type === 'timeEstimate' && typeof value === 'string') { // Assuming simplified timeEstimate storage
-             const match = value.match(/(\d+)-?(\d+)?/); 
-             if (match) {
-                 const avgHours = match[2] ? (parseInt(match[1]) + parseInt(match[2])) / 2 : parseInt(match[1]);
-                 // Crude assumption: value represents hours per week
-                 totalHoursManual += avgHours; 
-                 potentialHoursAutomated += avgHours * 0.7; // Simple 70% potential
-                 topTasks.push({ text: question.text || key, id: key, hours: avgHours });
-             }
+        if (!question || typeof value !== 'string') {
+            // Skip if question definition not found or answer is not a string
+            console.log(`Skipping ${key} - Question not found or invalid answer type:`, value);
+            return; 
         }
-        // Add logic for other question types influencing the score if needed
+
+        // Process only questions involving time estimations
+        if (question.type === 'timeEstimate' || (question.type === 'single' && value.includes('hour'))) {
+            console.log(`Processing Time Question ${key}:`, question.text, 'Value:', value);
+            
+            const avgHours = parseTimeValue(value);
+            if (avgHours === 0) {
+                console.log(`Could not parse hours from value: "${value}" for question ${key}`);
+                return;
+            }
+            
+            // Determine the time period and convert to weekly hours
+            let weeklyHours = avgHours;
+            let period = 'week'; // Default assumption
+            
+            if (question.timeOptions?.hoursPerDay || question.text.toLowerCase().includes('daily')) {
+                weeklyHours = avgHours * 5; // Assuming 5 workdays per week
+                period = 'day';
+            } else if (question.timeOptions?.hoursPerMonth || question.text.toLowerCase().includes('monthly')) {
+                weeklyHours = avgHours / 4; // Assuming 4 weeks per month
+                period = 'month';
+            } else if (question.timeOptions?.hoursPerTransaction || question.text.toLowerCase().includes('per transaction')) {
+                // Cannot directly convert per transaction to weekly without frequency data
+                // For now, we'll treat it as a weekly average impact, but this needs refinement
+                 weeklyHours = avgHours; 
+                 period = 'transaction';
+                 console.warn(`Question ${key} is per transaction - treating as weekly average for now.`);
+            } // else it's already weekly or assumed weekly
+            
+            console.log(`  Parsed Avg Hours: ${avgHours} (${period}) -> Weekly Hours: ${weeklyHours.toFixed(1)}`);
+
+            // Update totals
+            totalHoursManual += weeklyHours;
+            
+            // Determine automation potential (higher for routine data/comm tasks)
+            const automationPotential = question.id.includes('email') || 
+                                       question.id.includes('report') || 
+                                       question.id.includes('data') ||
+                                       question.id.includes('schedul') || // e.g., scheduling, schedules
+                                       question.id.includes('track') || // e.g., tracking
+                                       question.id.includes('updat') || // e.g., updating
+                                       question.id.includes('process') || // e.g., processing
+                                       question.id.includes('manag') || // e.g., managing (if implies routine)
+                                       question.id.includes('coord') // e.g., coordinating
+                                       ? 0.85 : 0.65; // Adjusted base potential
+                                       
+            const savedHours = weeklyHours * automationPotential;
+            potentialHoursAutomated += savedHours;
+            
+            topTasks.push({ 
+                text: question.text || key,
+                id: key, 
+                hours: weeklyHours // Store the calculated weekly hours for the task
+            });
+            
+            console.log(`  Added Task: ${question.text?.substring(0, 30)}..., Weekly Hrs: ${weeklyHours.toFixed(1)}, Potential Saved: ${savedHours.toFixed(1)} (Potential: ${automationPotential})`);
+        } else {
+             console.log(`Skipping ${key} - Not a time question or invalid format:`, value);
+        }
     });
 
+    // Sort tasks by hours spent (highest first) and take top 3
     topTasks.sort((a, b) => b.hours - a.hours);
     topTasks = topTasks.slice(0, 3);
+    
+    console.log('--- Calculation Summary --- ');
+    console.log('Total Manual Weekly Hours:', totalHoursManual.toFixed(1));
+    console.log('Potential Automated Weekly Hours:', potentialHoursAutomated.toFixed(1));
+    console.log('Top 3 Tasks by Weekly Hours:', topTasks);
 
-    automationScore = Math.min(100, Math.round(potentialHoursAutomated * 2.5)); // Adjusted arbitrary scaling
+    // Calculate automation score (0-100)
+    // Score based more heavily on potential hours saved, capped, with a small boost per answered question
+    automationScore = Math.min(100, Math.round(Math.min(potentialHoursAutomated * 2.5, 80) + 
+                                            (Object.keys(formData.answers).length * 1))); // Smaller boost per question
+    console.log('Calculated Automation Score:', automationScore);
 
-    const estimatedHourlyRate = formData.role === 'owner' || formData.role === 'c-suite' ? 100 : formData.role === 'director' || formData.role === 'manager' ? 75 : 50;
-    const potentialYearlySavings = potentialHoursAutomated * 52 * estimatedHourlyRate; // Weekly hours * 52 * rate
+    const estimatedHourlyRate = formData.role === 'owner' || formData.role === 'c-suite' ? 100 : 
+                               formData.role === 'director' || formData.role === 'manager' ? 75 : 50;
+    const potentialYearlySavings = potentialHoursAutomated * 52 * estimatedHourlyRate;
 
     return {
         totalHoursManual: totalHoursManual.toFixed(1),
         potentialHoursAutomated: potentialHoursAutomated.toFixed(1),
         automationScore,
-        topTasks,
+        topTasks, // Contains { text, id, hours (weekly) }
         potentialYearlySavings: potentialYearlySavings.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }),
     };
 };

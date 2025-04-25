@@ -350,7 +350,7 @@ const InteractiveProcessFlow: React.FC = () => {
           
           {/* Progress indicator */}
           <div className="flex justify-center items-center mt-8 mb-4">
-            {steps.map((step, index) => (
+            {steps.map((_, index) => (
               <div 
                 key={index}
                 className="mx-1 rounded-full transition-all duration-300"

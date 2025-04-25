@@ -1,0 +1,16 @@
+---
+description: Add Standard Tech Background
+globs: 
+alwaysApply: false
+---
+Description: Implement a multi-layered background effect for consistent tech styling across new components. This standard background uses a combination of base colors, radial gradients, an SVG circuit pattern, and scattered binary digits, matching the global background set in App.tsx.
+Implementation Details:
+Base Layer: An absolutely positioned div (absolute inset-0) sets the foundation with light and dark mode colors (bg-white dark:bg-[#1a1b1f]) and prevents overflow (overflow-hidden). The -z-10 ensures it stays behind content.
+Radial Gradients: Two distinct radial gradients are overlaid using separate absolutely positioned divs:
+A blueish gradient (rgba(59,130,246,...)) positioned at 30% 20%.
+A purplish gradient (rgba(124,58,237,...)) positioned at 70% 80%.
+Both gradients have slightly increased opacity in dark mode (dark:bg-[...] with 0.15 alpha vs 0.1).
+Circuit Pattern: An SVG <pattern> element (id="circuit-pattern") defines repeating circuit-like lines. This pattern is applied as a fill (fill="url(#circuit-pattern)") to a rect covering the container. The container has controlled opacity (opacity-10 dark:opacity-20) and the pattern's stroke color adapts (stroke="currentColor", class: text-gray-400 dark:text-gray-600).
+Binary Numbers: Small '0's and '1's are scattered across the background using individually positioned divs within an absolutely positioned container. This layer has very low opacity (opacity-5 dark:opacity-10) and uses text colors text-gray-900 dark:text-gray-200.
+
+Action: When this rule is invoked (e.g., "add standard tech background to NewComponent"), insert the full JSX structure containing these layered elements. Ideally, this structure should be encapsulated within a reusable React component (like the SiteBackground component in App.tsx) which is then imported and used in the target component.

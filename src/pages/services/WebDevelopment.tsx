@@ -20,8 +20,46 @@ export function WebDevelopment() {
   ];
 
   return (
-    <div className="min-h-screen text-white pt-32">
-      <div className="container mx-auto px-4 md:px-8 py-20">
+    <div className="min-h-screen text-white relative">
+      {/* Tech-themed background */}
+      <div className="absolute inset-0 -z-10 bg-white dark:bg-[#1a1b1f] overflow-hidden">
+        {/* Tech-themed radial gradients */}
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(59,130,246,0.1),transparent_30%)] dark:bg-[radial-gradient(circle_at_30%_20%,rgba(59,130,246,0.15),transparent_30%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(124,58,237,0.1),transparent_30%)] dark:bg-[radial-gradient(circle_at_70%_80%,rgba(124,58,237,0.15),transparent_30%)]" />
+        </div>
+        
+        {/* Circuit Lines */}
+        <div className="absolute inset-0 overflow-hidden opacity-10 dark:opacity-20">
+          <svg width="100%" height="100%" className="absolute">
+            <pattern id="circuit-pattern-web" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse">
+              <path
+                d="M0 50h40c5.5 0 10 4.5 10 10s4.5 10 10 10h40M50 0v40c0 5.5 4.5 10 10 10s10 4.5 10 10v40"
+                stroke="currentColor"
+                strokeWidth="1"
+                fill="none"
+                className="text-gray-400 dark:text-gray-600"
+              />
+            </pattern>
+            <rect width="100%" height="100%" fill="url(#circuit-pattern-web)" />
+          </svg>
+        </div>
+        
+        {/* Binary numbers */}
+        <div className="absolute inset-0 opacity-5 dark:opacity-10">
+          <div className="absolute left-[10%] top-[15%] text-xs font-mono text-gray-900 dark:text-gray-200">0</div>
+          <div className="absolute left-[20%] top-[25%] text-xs font-mono text-gray-900 dark:text-gray-200">1</div>
+          <div className="absolute left-[30%] top-[45%] text-xs font-mono text-gray-900 dark:text-gray-200">0</div>
+          <div className="absolute left-[40%] top-[65%] text-xs font-mono text-gray-900 dark:text-gray-200">1</div>
+          <div className="absolute left-[50%] top-[85%] text-xs font-mono text-gray-900 dark:text-gray-200">0</div>
+          <div className="absolute left-[60%] top-[35%] text-xs font-mono text-gray-900 dark:text-gray-200">1</div>
+          <div className="absolute left-[70%] top-[55%] text-xs font-mono text-gray-900 dark:text-gray-200">0</div>
+          <div className="absolute left-[80%] top-[75%] text-xs font-mono text-gray-900 dark:text-gray-200">1</div>
+          <div className="absolute left-[90%] top-[5%] text-xs font-mono text-gray-900 dark:text-gray-200">0</div>
+        </div>
+      </div>
+
+      <div className="container mx-auto px-4 md:px-8 py-20 pt-32">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

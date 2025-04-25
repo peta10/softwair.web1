@@ -1,11 +1,21 @@
 import { motion } from 'framer-motion';
 import { LoadingSpinner } from './LoadingSpinner';
+import { useState, useEffect } from 'react';
 
 interface Step4Props {
-  // No props needed for this step
+  onFinish?: () => void; // Add onFinish prop to handle automatic progression
 }
 
-export const Step4Loading: React.FC<Step4Props> = () => {
+export const Step4Loading: React.FC<Step4Props> = ({ onFinish }) => {
+  // Automatically progress to results after a delay
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (onFinish) onFinish();
+    }, 3500); // A bit longer to show the animation properly
+
+    return () => clearTimeout(timer);
+  }, [onFinish]);
+
   return (
     <motion.div
       initial={{ opacity: 0 }}

@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 
 declare global {
   interface Window {
-    gtag: (
+    gtag?: (
       command: 'config' | 'event',
       targetId: string,
       params?: Record<string, any>
@@ -17,10 +17,14 @@ export function useAnalytics() {
   const location = useLocation();
 
   useEffect(() => {
-    if (GA_ID) {
-      window.gtag('config', GA_ID, {
-        page_path: location.pathname + location.search
-      });
+    try {
+      if (GA_ID && typeof window !== 'undefined' && window.gtag) {
+        window.gtag('config', GA_ID, {
+          page_path: location.pathname + location.search
+        });
+      }
+    } catch (error) {
+      console.warn('Analytics error:', error);
     }
   }, [location]);
 
@@ -28,8 +32,12 @@ export function useAnalytics() {
     eventName: string,
     params?: Record<string, any>
   ) => {
-    if (GA_ID) {
-      window.gtag('event', eventName, params);
+    try {
+      if (GA_ID && typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', eventName, params);
+      }
+    } catch (error) {
+      console.warn('Analytics tracking error:', error);
     }
   }, []);
 
